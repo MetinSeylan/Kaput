@@ -1,10 +1,10 @@
+import async from 'async';
 import {model} from './database';
-
 
 var watchers = [];
 
 
-module.exports = (io, socket) => {
+module.exports = (io, socket, store) => {
 
     io.on('connection', (client) => {
         console.log('client conneted');
@@ -15,23 +15,26 @@ module.exports = (io, socket) => {
 
         client.on('replay', (id) => {
 
+            if (watchers.hasOwnProperty(client.id) || store.car) return;
+
             watchers[client.id] = true;
+            client.emit('play', true);
 
-            function sleep(time) {
-                return new Promise((resolve) => setTimeout(resolve, time));
-            }
+            model.find({_id: id}).exec((error, response) => {
 
+                async.eachSeries(response[0].data, function iteratee(item, callback) {
 
-            model.find({_id: id}).exec((error, data) => {
+                    if (!watchers.hasOwnProperty(client.id) || store.car) return;
 
-                data[0].data.forEach((frame) => {
-                    if (!watchers.hasOwnProperty(client.id)) return false;
+                    setTimeout(() => {
+                        client.emit('data', item);
+                        callback();
+                    }, 250);
 
-                    client.emit('data', frame);
-
+                }, function done() {
+                    delete watchers[client.id];
+                    client.emit('play', false);
                 });
-
-                delete watchers[client.id]
 
             });
 

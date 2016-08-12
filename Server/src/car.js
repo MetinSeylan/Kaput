@@ -1,7 +1,6 @@
 import { android_token } from './config';
 import {model} from './database';
 
-var car = false;
 var status = false;
 var timeline = [];
 
@@ -17,20 +16,19 @@ var engineStatus = (status) => {
 };
 
 
-module.exports = (io, socket) => {
+module.exports = (io, socket, store) => {
 
     io.on('connection', (client) => {
         console.log('car conneted')
 
-
         client.on('auth', (token) => {
-            if(token == android_token) car = client.id;
+            if (token == android_token) store.car = client.id;
             client.emit('auth', true);
             console.log('auth ok')
         });
 
         client.on('data', (data) => {
-            if(car != client.id) return;
+            if (store.car != client.id) return;
             if(status){
                 timeline.push(data);
                 socket.of('client').emit('data', data);
@@ -38,7 +36,7 @@ module.exports = (io, socket) => {
         });
 
         client.on('status', (stat) => {
-            if(car != client.id) return;
+            if (store.car != client.id) return;
             socket.of('client').emit('status', stat);
             status = stat;
             engineStatus(stat);
@@ -46,7 +44,7 @@ module.exports = (io, socket) => {
 
 
         client.on('disconnect', () => {
-            car = false;
+            store.car = false;
             socket.of('client').emit('status', false);
             status = false;
             engineStatus(false);
