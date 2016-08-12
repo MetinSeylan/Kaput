@@ -8,17 +8,17 @@
         <li>Engine Speed: {{data[1][2]}}</li>
         <li>Coolant: {{data[1][3]}}</li>
     </ul>
-    <div style="width: 300px; height: 300px;">
-    <maps :center.sync="center"></maps>
-        </div>
+
+    <ul>
+        <li v-for="l in list">
+            <button @click="replay(l._id)">{{l.created_at}}</button>
+        </li>
+    </ul>
 </template>
 
 <script type="text/babel">
-
     import {load, Map, Marker} from 'vue-google-maps'
-
     load(null,'3.24');
-
 
     export default{
         components:{
@@ -26,7 +26,7 @@
         },
         data(){
             return {
-                center: {lat: 39.927482, lng: 32.888711},
+                list: [],
                 status: false,
                 data: [
                     [
@@ -43,17 +43,21 @@
                 ]
             }
         },
+        methods: {
+            replay(id){
+                this.$socket.emit('replay', id);
+            }
+        },
         sockets: {
             data(data){
-                this.data = data;
                 console.log(data);
+                this.data = data;
             },
             status(status){
-                console.log(status);
                 this.status = status;
             },
             list(list){
-                console.log(list);
+                this.list = list;
             }
         }
     }
