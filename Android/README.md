@@ -1,4 +1,4 @@
-# Adroid
+# Android
 
 > Vuejs Starter Kit Project 
 
