@@ -1,0 +1,38 @@
+{
+  "name": "StarterKit",
+  "description": "A Vue.js project",
+  "author": "Metin Seylan <metnsyln@gmail.com>",
+  "private": true,
+  "scripts": {
+    "dev": "webpack-dev-server --inline --host 192.168.0.16 --port 80 --content-base http://192.168.0.16",
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
+  },
+  "dependencies": {
+    "es6-module-loader": "^0.17.11",
+    "socket.io-client": "^1.4.8",
+    "vue": "^1.0.0",
+    "vue-router": "^0.7.11",
+    "vue-socket.io": "^1.0.2",
+    "vux": "^0.1.3-rc6"
+  },
+  "devDependencies": {
+    "babel-runtime": "^6.0.0",
+    "babel-core": "^6.0.0",
+    "babel-loader": "^6.0.0",
+    "babel-plugin-transform-runtime": "^6.0.0",
+    "babel-preset-es2015": "^6.0.0",
+    "babel-preset-stage-2": "^6.0.0",
+    "cross-env": "^1.0.6",
+    "css-loader": "^0.23.0",
+    "sass-loader": "^3.1.2",
+    "file-loader": "^0.8.4",
+    "json-loader": "^0.5.4",
+    "url-loader": "^0.5.7",
+    "vue-hot-reload-api": "^1.2.0",
+    "vue-html-loader": "^1.0.0",
+    "vue-loader": "^8.2.1",
+    "vue-style-loader": "^1.0.0",
+    "webpack": "^1.12.2",
+    "webpack-dev-server": "^1.12.0"
+  }
+}
