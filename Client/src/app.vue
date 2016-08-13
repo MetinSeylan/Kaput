@@ -1,12 +1,12 @@
-<template>
+<template xmlns="http://www.w3.org/1999/xhtml">
     <ul>
         <li>Longitude: {{data[0][0]}}</li>
         <li>Latitude: {{data[0][1]}}</li>
         <li>Heading: {{data[0][2]}}</li>
-        <li>Engine Load: {{data[1][0]}}</li>
+        <li>Engine Load: {{data[1][0]}}%</li>
         <li>Engine RPM: {{data[1][1]}}</li>
-        <li>Engine Speed: {{data[1][2]}}</li>
-        <li>Coolant: {{data[1][3]}}</li>
+        <li>Speed: {{data[1][2]}}<sup>km/h</sup></li>
+        <li>Coolant: {{data[1][3]}}<sup>C</sup></li>
     </ul>
 
     <ul>
@@ -14,6 +14,7 @@
             <button @click="replay(l._id)">{{l.created_at}}</button>
         </li>
     </ul>
+
 
     <div id="speed" v-if="play">
         <ul>
@@ -40,7 +41,7 @@
 
 </template>
 
-<style lang="sass">
+<style type="style/sass" lang="sass">
 
     #map{
         text-align:center;
@@ -79,6 +80,7 @@
                 status: false,
                 play: false,
                 replay_speed: 1,
+                range: 1,
                 data: [
                     [
                         -33.315629, //longitude
@@ -86,10 +88,10 @@
                         30 //heading
                     ],
                     [
-                        false, //load
-                        false, //rpm
-                        false, //speed
-                        false //coolant
+                        0, //load
+                        0, //rpm
+                        0, //speed
+                        0 //coolant
                     ]
                 ]
             }
