@@ -7,7 +7,8 @@
   "private": true,
   "scripts": {
     "dev": "nodemon --exec babel-node -- src/main.js",
-    "test": "mocha --recursive --require babel-register"
+    "test": "mocha --recursive --require babel-register",
+    "build": ""
   },
   "devDependencies": {
     "babel-cli": "^6.11.4",

@@ -13,11 +13,26 @@ module.exports = (io, socket, store) => {
             client.emit('list', list);
         });
 
+        client.on('replay_speed', (speed) => {
+            if (!watchers.hasOwnProperty(client.id) || store.car) return;
+
+            if (speed == 1) {
+                watchers[client.id] = 250;
+            } else if (speed == 2) {
+                watchers[client.id] = 125;
+            } else if (speed == 3) {
+                watchers[client.id] = 84;
+            } else if (speed == 4) {
+                watchers[client.id] = 63;
+            }
+
+        });
+
         client.on('replay', (id) => {
 
             if (watchers.hasOwnProperty(client.id) || store.car) return;
 
-            watchers[client.id] = true;
+            watchers[client.id] = 250;
             client.emit('play', true);
 
             model.find({_id: id}).exec((error, response) => {
@@ -29,7 +44,7 @@ module.exports = (io, socket, store) => {
                     setTimeout(() => {
                         client.emit('data', item);
                         callback();
-                    }, 250);
+                    }, watchers[client.id]);
 
                 }, function done() {
                     delete watchers[client.id];

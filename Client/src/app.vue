@@ -14,6 +14,22 @@
             <button @click="replay(l._id)">{{l.created_at}}</button>
         </li>
     </ul>
+
+    <div v-if="play">
+        <ul>
+            <button @click="speed(1)">1x</button>
+        </ul>
+        <ul>
+            <button @click="speed(2)">2x</button>
+        </ul>
+        <ul>
+            <button @click="speed(3)">3x</button>
+        </ul>
+        <ul>
+            <button @click="speed(4)">4x</button>
+        </ul>
+    </div>
+
 </template>
 
 <script type="text/babel">
@@ -28,6 +44,8 @@
             return {
                 list: [],
                 status: false,
+                play: false,
+                replay_speed: 1,
                 data: [
                     [
                         -33.315629, //longitude
@@ -46,6 +64,10 @@
         methods: {
             replay(id){
                 this.$socket.emit('replay', id);
+            },
+            speed(speed){
+                this.replay_speed = speed;
+                this.$socket.emit('replay_speed', speed);
             }
         },
         sockets: {
@@ -58,6 +80,9 @@
             },
             list(list){
                 this.list = list;
+            },
+            play(status){
+                this.play = status;
             }
         }
     }
