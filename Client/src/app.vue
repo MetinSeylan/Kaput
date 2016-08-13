@@ -10,27 +10,56 @@
     </ul>
 
     <ul>
-        <li v-for="l in list">
+        <li v-if="!status" v-for="l in list">
             <button @click="replay(l._id)">{{l.created_at}}</button>
         </li>
     </ul>
 
-    <div v-if="play">
+    <div id="speed" v-if="play">
         <ul>
-            <button @click="speed(1)">1x</button>
-        </ul>
-        <ul>
-            <button @click="speed(2)">2x</button>
-        </ul>
-        <ul>
-            <button @click="speed(3)">3x</button>
-        </ul>
-        <ul>
-            <button @click="speed(4)">4x</button>
+            <li>
+                <button @click="speed(1)">1x</button>
+            </li>
+            <li>
+                <button @click="speed(2)">2x</button>
+            </li>
+            <li>
+                <button @click="speed(3)">3x</button>
+            </li>
+            <li>
+                <button @click="speed(4)">4x</button>
+            </li>
         </ul>
     </div>
 
+    <div id="map">
+        <i class="material-icons" :style="{transform: 'rotate('+data[0][2]+'deg)'}">navigation</i>
+        <maps :center.sync="maps.center" :zoom.sync="maps.zoom"></maps>
+    </div>
+
+
 </template>
+
+<style lang="sass">
+
+    #map{
+        text-align:center;
+        position:relative;
+        height: 400px;
+
+        i {
+            position:absolute;
+            z-index: 9999;
+            line-height: 400px;
+    } }
+
+        #speed{
+            li {
+                display:inline;
+        }
+    }
+
+</style>
 
 <script type="text/babel">
     import {load, Map, Marker} from 'vue-google-maps'
@@ -42,6 +71,10 @@
         },
         data(){
             return {
+                maps: {
+                    center: {"lat": 47.785156, "lng": -33.315629},
+                    zoom: 16
+                },
                 list: [],
                 status: false,
                 play: false,
@@ -74,6 +107,8 @@
             data(data){
                 console.log(data);
                 this.data = data;
+                this.maps.center.lat = data[0][1];
+                this.maps.center.lng = data[0][0];
             },
             status(status){
                 this.status = status;
