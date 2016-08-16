@@ -15,13 +15,13 @@
         </li>
     </ul>
 
-    <div v-if="player.status != 3" style="max-width: 500px">
+    <div v-if="player.status != 3 && !status" style="max-width: 500px">
         <slider v-if="player.size" :max.sync="player.size" :value.sync="player.frame" style="width: 400px;"></slider>
 
-        <p>{{player.frame}} / {{player.size}}</p>
+        <p>{{time(player.frame)}} / {{time(player.size)}}</p>
     </div>
 
-    <div id="speed" v-if="player.status != 3">
+    <div id="speed" v-if="player.status != 3 && !status">
         <div>
             <button @click="pause()">pause</button>
             <button @click="play()">play</button>
@@ -129,6 +129,14 @@
             speed(speed){
                 this.replay_speed = speed;
                 this.$socket.emit('player_speed', speed);
+            },
+            time(size){
+                let min = Math.floor((size / 4).toFixed(0) / 60);
+                let sec = String(((size / 4).toFixed(0) - (min * 60)));
+
+                let pad = String("00").substring(0, 2 - sec.length) + sec;
+
+                return min + ':' + pad;
             }
         },
         sockets: {

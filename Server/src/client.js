@@ -2,6 +2,8 @@ import async from 'async';
 import {model} from './database';
 import Player from './player';
 
+import {fetchUrl} from 'fetch';
+
 var watchers = [];
 
 
@@ -9,6 +11,31 @@ module.exports = (io, socket, store) => {
 
     io.on('connection', (client) => {
         console.log('client conneted');
+
+        new Promise((resolve) => {
+
+            fetchUrl("http://maps.googleapis.com/maps/api/geocode/json?sensor=true&latlng=40.711004,-73.961452", function (error, meta, body) {
+                let response = JSON.parse(body.toString());
+                if (response.results[0].formatted_address) {
+                    var start = response.results[0].formatted_address;
+
+                    fetchUrl("http://maps.googleapis.com/maps/api/geocode/json?sensor=true&latlng=40.712004,-73.961452", function (error, meta, body) {
+                        let response = JSON.parse(body.toString());
+                        if (response.results[0].formatted_address) {
+                            var end = response.results[0].formatted_address;
+                            resolve([start, end]);
+                        }
+                    });
+
+                }
+            });
+
+        }).then((response) => {
+            console.log(response[0], '|||', response[1]);
+        });
+
+
+
 
         model.find().select('_id created_at').limit(10).exec((error, list) => {
             client.emit('list', list);
@@ -18,7 +45,7 @@ module.exports = (io, socket, store) => {
             if (!store.watchers.hasOwnProperty(client.id) || store.car) return;
 
             if (speed == 1) {
-                store.players[client.id].setSpeed(250);
+                store.players[client.id].setSpeed(240);
             } else if (speed == 2) {
                 store.players[client.id].setSpeed(125);
             } else if (speed == 3) {
@@ -67,7 +94,7 @@ module.exports = (io, socket, store) => {
             }).then(() => {
 
                 store.watchers[client.id] = true;
-                store.players[client.id] = new Player(id, store, 250, client);
+                store.players[client.id] = new Player(id, store, 240, client);
 
                 store.players[client.id].setInfo();
 
