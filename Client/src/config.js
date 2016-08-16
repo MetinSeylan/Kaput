@@ -1,3 +1,3 @@
 module.exports = {
-    socket: 'http://metinseylan.com:1923/client'
+    socket: 'http://localhost:1923/client'
 };

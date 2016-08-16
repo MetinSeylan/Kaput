@@ -1,5 +1,6 @@
 import async from 'async';
 import {model} from './database';
+import Player from './player';
 
 var watchers = [];
 
@@ -13,51 +14,73 @@ module.exports = (io, socket, store) => {
             client.emit('list', list);
         });
 
-        client.on('replay_speed', (speed) => {
-            if (!watchers.hasOwnProperty(client.id) || store.car) return;
+        client.on('player_speed', (speed) => {
+            if (!store.watchers.hasOwnProperty(client.id) || store.car) return;
 
             if (speed == 1) {
-                watchers[client.id] = 250;
+                store.players[client.id].setSpeed(250);
             } else if (speed == 2) {
-                watchers[client.id] = 125;
+                store.players[client.id].setSpeed(125);
             } else if (speed == 3) {
-                watchers[client.id] = 84;
+                store.players[client.id].setSpeed(84);
             } else if (speed == 4) {
-                watchers[client.id] = 63;
+                store.players[client.id].setSpeed(63);
             }
 
         });
 
+
+        client.on('change_frame', (index) => {
+            store.players[client.id].setIndex(index);
+        });
+
+        client.on('player_play', () => {
+            store.players[client.id].play();
+        });
+
+        client.on('player_pause', () => {
+            store.players[client.id].pause();
+        });
+
+        client.on('player_stop', () => {
+            store.players[client.id].stop();
+        });
+
         client.on('replay', (id) => {
 
-            if (watchers.hasOwnProperty(client.id) || store.car) return;
+            if (store.watchers.hasOwnProperty(client.id) || store.car) return;
 
-            watchers[client.id] = 250;
-            client.emit('play', true);
+            new Promise((resolve) => {
 
-            model.find({_id: id}).exec((error, response) => {
+                if (!store.records.hasOwnProperty(id)) {
 
-                async.eachSeries(response[0].data, function iteratee(item, callback) {
+                    model.find({_id: id}).exec((error, response) => {
+                        store.records[id] = response[0].data;
+                        resolve();
+                    });
 
-                    if (!watchers.hasOwnProperty(client.id) || store.car) return;
+                } else {
+                    resolve();
+                }
 
-                    setTimeout(() => {
-                        client.emit('data', item);
-                        callback();
-                    }, watchers[client.id]);
+            }).then(() => {
 
-                }, function done() {
-                    delete watchers[client.id];
-                    client.emit('play', false);
-                });
+                store.watchers[client.id] = true;
+                store.players[client.id] = new Player(id, store, 250, client);
+
+                store.players[client.id].setInfo();
 
             });
+
 
         });
 
         client.on('disconnect', () => {
 
-            if (watchers.hasOwnProperty(client.id)) delete watchers[client.id];
+            if (store.watchers.hasOwnProperty(client.id)) {
+                delete store.watchers[client.id];
+                delete store.players[client.id];
+            }
 
         });
 

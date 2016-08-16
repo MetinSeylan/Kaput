@@ -15,8 +15,18 @@
         </li>
     </ul>
 
+    <div v-if="player.status != 3" style="max-width: 500px">
+        <input v-model="player.frame" min="0" :max="player.size" style="display:block; width: 500px;" type="range">
+        {{player.frame}} / {{player.size}}
+    </div>
 
-    <div id="speed" v-if="play">
+    <div id="speed" v-if="player.status != 3">
+        <div>
+            <button @click="pause()">pause</button>
+            <button @click="play()">play</button>
+            <button @click="stop()">stop</button>
+        </div>
+
         <ul>
             <li>
                 <button @click="speed(1)">1x</button>
@@ -72,15 +82,19 @@
         },
         data(){
             return {
+                player: {
+                    status: 3,
+                    speed: 1,
+                    play: false,
+                    size: 0,
+                    frame: 0
+                },
                 maps: {
                     center: {"lat": 47.785156, "lng": -33.315629},
                     zoom: 16
                 },
                 list: [],
                 status: false,
-                play: false,
-                replay_speed: 1,
-                range: 1,
                 data: [
                     [
                         -33.315629, //longitude
@@ -100,17 +114,29 @@
             replay(id){
                 this.$socket.emit('replay', id);
             },
+            pause(){
+                this.$socket.emit('player_pause');
+            },
+            play(){
+                this.$socket.emit('player_play');
+            },
+            stop(){
+                this.$socket.emit('player_stop');
+                this.player.size = 0;
+                this.player.frame = 0;
+            },
             speed(speed){
                 this.replay_speed = speed;
-                this.$socket.emit('replay_speed', speed);
+                this.$socket.emit('player_speed', speed);
             }
         },
         sockets: {
             data(data){
                 console.log(data);
-                this.data = data;
-                this.maps.center.lat = data[0][1];
-                this.maps.center.lng = data[0][0];
+                this.data = data.data;
+                this.player.frame = data.frame;
+                this.maps.center.lat = data.data[0][1];
+                this.maps.center.lng = data.data[0][0];
             },
             status(status){
                 this.status = status;
@@ -118,8 +144,11 @@
             list(list){
                 this.list = list;
             },
-            play(status){
-                this.play = status;
+            playerStatus(status){
+                this.player.status = status;
+            },
+            playerInfo(data){
+                this.player.size = data.size;
             }
         }
     }
