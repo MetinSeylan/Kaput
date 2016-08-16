@@ -16,8 +16,9 @@
     </ul>
 
     <div v-if="player.status != 3" style="max-width: 500px">
-        <input v-model="player.frame" min="0" :max="player.size" style="display:block; width: 500px;" type="range">
-        {{player.frame}} / {{player.size}}
+        <slider v-if="player.size" :max.sync="player.size" :value.sync="player.frame" style="width: 400px;"></slider>
+
+        <p>{{player.frame}} / {{player.size}}</p>
     </div>
 
     <div id="speed" v-if="player.status != 3">
@@ -52,32 +53,18 @@
 </template>
 
 <style type="style/sass" lang="sass">
-
-    #map{
-        text-align:center;
-        position:relative;
-        height: 400px;
-
-        i {
-            position:absolute;
-            z-index: 9999;
-            line-height: 400px;
-    } }
-
-        #speed{
-            li {
-                display:inline;
-        }
-    }
-
+    @import "style"
 </style>
 
 <script type="text/babel">
-    import {load, Map, Marker} from 'vue-google-maps'
+    import {load, Map, Marker} from 'vue-google-maps';
     load(null,'3.24');
+
+    import slider from './partials/slider.vue';
 
     export default{
         components:{
+            slider: slider,
             maps: Map
         },
         data(){
@@ -110,9 +97,23 @@
                 ]
             }
         },
+        events: {
+            pause(){
+                this.pause();
+            },
+            play(){
+                this.play();
+            },
+            setFrame(id){
+                this.frame(id);
+            }
+        },
         methods: {
             replay(id){
                 this.$socket.emit('replay', id);
+            },
+            frame(id){
+                this.$socket.emit('change_frame', id);
             },
             pause(){
                 this.$socket.emit('player_pause');
@@ -132,7 +133,6 @@
         },
         sockets: {
             data(data){
-                console.log(data);
                 this.data = data.data;
                 this.player.frame = data.frame;
                 this.maps.center.lat = data.data[0][1];

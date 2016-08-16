@@ -35,6 +35,10 @@ module.exports = class Player {
         this.index = index;
     }
 
+    sendFrame(index) {
+        this.client.emit('data', {data: this.store.records[this.id][index], frame: index});
+    }
+
     play() {
         if (this.status == 1) return;
         this.setStatus(1);
@@ -70,7 +74,7 @@ module.exports = class Player {
                         return;
                     }
 
-                    _this.client.emit('data', {data: _this.store.records[_this.id][_this.index], frame: _this.index});
+                    _this.sendFrame(_this.index);
                     _this.setIndex(_this.index + 1);
                     next();
                 }, _this.speed);

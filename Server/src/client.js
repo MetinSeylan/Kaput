@@ -32,6 +32,7 @@ module.exports = (io, socket, store) => {
 
         client.on('change_frame', (index) => {
             store.players[client.id].setIndex(index);
+            store.players[client.id].sendFrame(index);
         });
 
         client.on('player_play', () => {
