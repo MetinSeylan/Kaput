@@ -1,5 +1,7 @@
 import { android_token } from './config';
 import {model} from './database';
+import {fetchUrl} from 'fetch';
+
 
 var status = false;
 var timeline = [];
@@ -8,8 +10,47 @@ var timeline = [];
 var engineStatus = (status) => {
     if(!status){
         if(Boolean(timeline.length)) {
-            new model({data: timeline}).save();
+
+            var endLatlng = timeline[timeline.length - 2][0][1] + "," + timeline[timeline.length - 2][0][0];
+            var startLatlng = timeline[0][0][1] + "," + timeline[0][0][0];
+            var data = timeline;
+
+
+            new Promise((resolve) => {
+
+                var e = data;
+
+                fetchUrl("http://maps.googleapis.com/maps/api/geocode/json?sensor=true&latlng=" + startLatlng, function (error, meta, body) {
+                    let response = JSON.parse(body.toString());
+                    if (response.results[0].formatted_address) {
+                        resolve([response.results[0].formatted_address, e])
+                    }
+                });
+
+            }).then((res) => {
+
+
+                fetchUrl("http://maps.googleapis.com/maps/api/geocode/json?sensor=true&latlng=" + endLatlng, function (error1, meta1, body1) {
+                    let response1 = JSON.parse(body1.toString());
+
+                    if (response1.results[0].formatted_address) {
+
+                        new model({
+                            data: res[1],
+                            start: res[0],
+                            end: response1.results[0].formatted_address
+                        }).save();
+                    }
+                });
+
+            });
+
+
+
+
         }
+
+        data = [];
 
         timeline = [];
     }
@@ -31,7 +72,7 @@ module.exports = (io, socket, store) => {
             if (store.car != client.id) return;
             if(status){
                 timeline.push(data);
-                socket.of('client').emit('data', data);
+                socket.of('client').emit('data', {data: data, frame: 0});
             }
         });
 

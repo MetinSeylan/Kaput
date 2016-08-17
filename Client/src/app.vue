@@ -11,7 +11,7 @@
 
     <ul>
         <li v-if="!status" v-for="l in list">
-            <button @click="replay(l._id)">{{l.created_at}}</button>
+            <button @click="replay(l._id)">{{l.start}} ==TO== {{l.end}}</button>
         </li>
     </ul>
 
