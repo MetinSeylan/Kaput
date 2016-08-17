@@ -6,6 +6,10 @@ var _async2 = _interopRequireDefault(_async);
 
 var _database = require('./database');
 
+var _player = require('./player');
+
+var _player2 = _interopRequireDefault(_player);
+
 function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : {default: obj};
 }
@@ -17,51 +21,71 @@ module.exports = function (io, socket, store) {
     io.on('connection', function (client) {
         console.log('client conneted');
 
-        _database.model.find().select('_id created_at').limit(10).exec(function (error, list) {
+        _database.model.find().select('_id start end created_at').limit(10).exec(function (error, list) {
             client.emit('list', list);
         });
 
-        client.on('replay_speed', function (speed) {
-            if (!watchers.hasOwnProperty(client.id) || store.car) return;
+        client.on('player_speed', function (speed) {
+            if (!store.watchers.hasOwnProperty(client.id) || store.car) return;
 
             if (speed == 1) {
-                watchers[client.id] = 250;
+                store.players[client.id].setSpeed(240);
             } else if (speed == 2) {
-                watchers[client.id] = 125;
+                store.players[client.id].setSpeed(125);
             } else if (speed == 3) {
-                watchers[client.id] = 84;
+                store.players[client.id].setSpeed(84);
             } else if (speed == 4) {
-                watchers[client.id] = 63;
+                store.players[client.id].setSpeed(63);
             }
+        });
+
+        client.on('change_frame', function (index) {
+            store.players[client.id].setIndex(index);
+            store.players[client.id].sendFrame(index);
+        });
+
+        client.on('player_play', function () {
+            store.players[client.id].play();
+        });
+
+        client.on('player_pause', function () {
+            store.players[client.id].pause();
+        });
+
+        client.on('player_stop', function () {
+            store.players[client.id].stop();
         });
 
         client.on('replay', function (id) {
 
-            if (watchers.hasOwnProperty(client.id) || store.car) return;
+            if (store.watchers.hasOwnProperty(client.id) || store.car) return;
 
-            watchers[client.id] = 250;
-            client.emit('play', true);
+            new Promise(function (resolve) {
 
-            _database.model.find({_id: id}).exec(function (error, response) {
+                if (!store.records.hasOwnProperty(id)) {
 
-                _async2.default.eachSeries(response[0].data, function iteratee(item, callback) {
+                    _database.model.find({_id: id}).exec(function (error, response) {
+                        store.records[id] = response[0].data;
+                        resolve();
+                    });
+                } else {
+                    resolve();
+                }
+            }).then(function () {
 
-                    if (!watchers.hasOwnProperty(client.id) || store.car) return;
+                store.watchers[client.id] = true;
+                store.players[client.id] = new _player2.default(id, store, 240, client);
 
-                    setTimeout(function () {
-                        client.emit('data', item);
-                        callback();
-                    }, watchers[client.id]);
-                }, function done() {
-                    delete watchers[client.id];
-                    client.emit('play', false);
-                });
+                store.players[client.id].setInfo();
             });
         });
 
         client.on('disconnect', function () {
 
-            if (watchers.hasOwnProperty(client.id)) delete watchers[client.id];
+            if (store.watchers.hasOwnProperty(client.id)) {
+                delete store.watchers[client.id];
+                delete store.players[client.id];
+            }
         });
     });
 };

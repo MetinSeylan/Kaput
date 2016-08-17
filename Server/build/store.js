@@ -14,6 +14,9 @@ var store = function store() {
     _classCallCheck(this, store);
 
     this.car = false;
+    this.records = [];
+    this.watchers = [];
+    this.players = [];
 };
 
 exports.default = store;
