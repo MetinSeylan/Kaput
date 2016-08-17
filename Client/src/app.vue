@@ -46,7 +46,11 @@
 
     <div id="map">
         <i class="material-icons" :style="{transform: 'rotate('+data[0][2]+'deg)'}">navigation</i>
-        <maps :center.sync="maps.center" :zoom.sync="maps.zoom"></maps>
+        <maps :zoom.sync="maps.zoom">
+            <marker
+                    :position.sync="maps.center"
+            ></marker>
+        </maps>
     </div>
 
 
@@ -62,10 +66,12 @@
 
     import slider from './partials/slider.vue';
 
+
     export default{
         components:{
             slider: slider,
-            maps: Map
+            maps: Map,
+            marker: Marker
         },
         data(){
             return {
@@ -78,7 +84,9 @@
                 },
                 maps: {
                     center: {"lat": 47.785156, "lng": -33.315629},
-                    zoom: 16
+                    zoom: 16,
+                    lat: 0,
+                    lng: 0
                 },
                 list: [],
                 status: false,
@@ -143,8 +151,14 @@
             data(data){
                 this.data = data.data;
                 this.player.frame = data.frame;
+
                 this.maps.center.lat = data.data[0][1];
                 this.maps.center.lng = data.data[0][0];
+
+                console.log(this.mapObject);
+
+                this.$broadcast('g-panTo', new window.google.maps.LatLng(data.data[0][1], data.data[0][0]));
+
             },
             status(status){
                 this.status = status;
