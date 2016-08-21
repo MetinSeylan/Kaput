@@ -35,6 +35,8 @@ var engineStatus = (status) => {
 
                     if (response1.results[0].formatted_address) {
 
+                        if (res[0] == response1.results[0].formatted_address) return;
+
                         new model({
                             data: res[1],
                             start: res[0],
